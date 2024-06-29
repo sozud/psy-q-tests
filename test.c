@@ -12,25 +12,25 @@ typedef unsigned long long u64;
 void PcsxReduxExit(short exitCode)
 {
     printf("Exiting with code %d\n", exitCode);
-    #ifdef PSX
+#ifdef PSX
     (*(volatile unsigned short *)0x1f802082) = exitCode;
-    #else
+#else
     exit(exitCode);
-    #endif
+#endif
 }
 
 u8 space[0x1000] = {0};
 
- s32 SpuInitMalloc(s32 num, s8* top);
- long SpuMallocWithStartAddr(unsigned long addr, long size);
+s32 SpuInitMalloc(s32 num, s8 *top);
+long SpuMallocWithStartAddr(unsigned long addr, long size);
 
- 
-typedef struct tagSpuMalloc {
+typedef struct tagSpuMalloc
+{
     u32 addr;
     u32 size;
 } SPU_MALLOC;
 
-extern SPU_MALLOC *_spu_memList;
+extern SPU_MALLOC *_spu_memList[];
 
 #define ASSERT_EQ(value1, value2)                                                           \
     if ((value1) != (value2))                                                               \
@@ -40,16 +40,15 @@ extern SPU_MALLOC *_spu_memList;
     }
 
 #define ASSERT_EQ_HEX(value1, value2)                                                           \
-    if ((value1) != (value2))                                                               \
-    {                                                                                       \
+    if ((value1) != (value2))                                                                   \
+    {                                                                                           \
         printf("%08X != %08X in %s %s:%d\n", value1, value2, __FUNCTION__, __FILE__, __LINE__); \
-        PcsxReduxExit(1);                                                                   \
+        PcsxReduxExit(1);                                                                       \
     }
 
 extern s32 _spu_rev_reserve_wa;
 extern s32 _spu_rev_offsetaddr;
 extern s32 _spu_mem_mode_plus;
-s8 temp[0x1000] = {0};
 
 s32 SpuClearReverbWorkArea(s32 rev_mode);
 
@@ -60,26 +59,29 @@ s32 g_VabAddrs[] = {0x00001010, 0x00042CC0, 0x00050E50,
 
 #define SS_IMEDIATE 0
 
-#define LOAD_VAB(vab_id, name, addr, data, dataLen)                            \
-    SsVabClose(vab_id);                                                        \
-    while (SsVabTransCompleted(SS_IMEDIATE) != 1)                              \
-        ;                                                                      \
-                                                                               \
-    if (SsVabOpenHeadSticky(name, vab_id, addr) < 0) {                         \
-        return -1;                                                             \
-    }                                                                          \
-    if (SsVabTransBodyPartly(data, dataLen, vab_id) < 0) {                     \
-        return -1;                                                             \
-    }                                                                          \
+#define LOAD_VAB(vab_id, name, addr, data, dataLen)      \
+    SsVabClose(vab_id);                                  \
+    while (SsVabTransCompleted(SS_IMEDIATE) != 1)        \
+        ;                                                \
+                                                         \
+    if (SsVabOpenHeadSticky(name, vab_id, addr) < 0)     \
+    {                                                    \
+        return -1;                                       \
+    }                                                    \
+    if (SsVabTransBodyPartly(data, dataLen, vab_id) < 0) \
+    {                                                    \
+        return -1;                                       \
+    }                                                    \
     while (SsVabTransCompleted(SS_IMEDIATE) != 1)
 
 extern unsigned char vb_0[];
 extern unsigned char vh_0[];
 extern unsigned char lib_seq[];
 
-short SsSeqOpen(char* addr, short vab_id); 
- 
-typedef struct VabHdr {
+short SsSeqOpen(char *addr, short vab_id);
+
+typedef struct VabHdr
+{
     s32 form;
     s32 ver;
     s32 id;
@@ -95,20 +97,22 @@ typedef struct VabHdr {
     u32 reserved1;
 } VabHdr;
 
-typedef struct ProgAtr { /* Program Headdings */
+typedef struct ProgAtr
+{ /* Program Headdings */
 
-    unsigned char tones;      /* # of tones */
-    unsigned char mvol;       /* program volume */
-    unsigned char prior;      /* program priority */
-    unsigned char mode;       /* program mode */
-    unsigned char mpan;       /* program pan */
-    char reserved0;           /* system reserved */
-    short attr;               /* program attribute */
-    unsigned long reserved1; 
-    unsigned short reserved2; 
-    unsigned short reserved3; 
-} ProgAtr;    
-typedef struct VagAtr { /* VAG Tone Headdings */
+    unsigned char tones; /* # of tones */
+    unsigned char mvol;  /* program volume */
+    unsigned char prior; /* program priority */
+    unsigned char mode;  /* program mode */
+    unsigned char mpan;  /* program pan */
+    char reserved0;      /* system reserved */
+    short attr;          /* program attribute */
+    unsigned long reserved1;
+    unsigned short reserved2;
+    unsigned short reserved3;
+} ProgAtr;
+typedef struct VagAtr
+{ /* VAG Tone Headdings */
 
     unsigned char prior;     /* tone priority */
     unsigned char mode;      /* play mode */
@@ -134,24 +138,37 @@ typedef struct VagAtr { /* VAG Tone Headdings */
 
 } VagAtr; /* 32 byte */
 
-extern VabHdr* _svm_vab_vh[16];     /* number: 21 */
-extern ProgAtr* _svm_vab_pg[16];    /* number: 22 */
-extern VagAtr* _svm_vab_tn[16];     /* number: 23 */
+extern VabHdr *_svm_vab_vh[16];  /* number: 21 */
+extern ProgAtr *_svm_vab_pg[16]; /* number: 22 */
+extern VagAtr *_svm_vab_tn[16];  /* number: 23 */
 extern s32 _svm_vab_total[16];
 extern s32 _svm_vab_start[];
 extern u8 _svm_vab_used[];
 
 #define SS_SEQ_TABSIZ 176
 
-	static char stab[SS_SEQ_TABSIZ*4*5]; 
+static char stab[SS_SEQ_TABSIZ * 4 * 5];
 
-    int frames = 0;
+int frames = 0;
 extern s32 _spu_rev_reserve_wa;
 extern s32 _spu_rev_offsetaddr;
- extern s32 _spu_mem_mode_unitM;
- extern s32 _spu_mem_mode_plus;
+extern s32 _spu_mem_mode_unitM;
+extern s32 _spu_mem_mode_plus;
 
-int main()
+s32 SpuInitMalloc(s32 num, s8 *top);
+s32 SpuMalloc(s32 size);
+
+void print_memlist()
+{
+    int i;
+    printf("-----------------------------------------\n");
+    for (i = 0; i < 5; i++)
+    {
+        printf("_spu_memList[%d] addr %08X size %d\n", i, (*_spu_memList)[i].addr, (*_spu_memList)[i].size);
+    }
+}
+
+void test_ss_vab()
 {
     int i;
     int g_SeqAccessNum;
@@ -159,9 +176,9 @@ int main()
     SsInitHot();
     SsSetTickMode(1);
     SpuMallocWithStartAddr(0x1010, 0x10000);
-    SsSetTableSize(stab, 4, 5); 
+    SsSetTableSize(stab, 4, 5);
     SsStart();
-    
+
     printf("before loading ================================================\n");
 
     printf("_spu_rev_reserve_wa %d\n", _spu_rev_reserve_wa);
@@ -169,11 +186,8 @@ int main()
     printf("_spu_mem_mode_unitM %d\n", _spu_mem_mode_unitM);
     printf("_spu_mem_mode_plus %d\n", _spu_mem_mode_plus);
 
-    for(i = 0; i < 32; i++)
-    {
-        printf("_spu_memList[%d] addr %08X size %d\n", i, _spu_memList[i].addr, _spu_memList[i].size);
-    }
-
+    print_memlist();
+/*
     ASSERT_EQ(_spu_memList[0].addr, 0x00001010);
     ASSERT_EQ(_spu_memList[1].addr, 0x40011010);
     ASSERT_EQ(_spu_memList[2].addr, 0);
@@ -181,7 +195,7 @@ int main()
     ASSERT_EQ(_spu_memList[0].size, 65536);
     ASSERT_EQ(_spu_memList[1].size, 454640);
     ASSERT_EQ(_spu_memList[2].size, 0);
-
+*/
 #if 1
     LOAD_VAB(0, vh_0, g_VabAddrs[0], vb_0, 269488);
 #endif
@@ -208,11 +222,8 @@ int main()
 
     printf("_svm_vab_used[0] %d\n", _svm_vab_used[0]);
 
-    for(i = 0; i < 32; i++)
-    {
-        printf("_spu_memList[%d] addr %08X size %d\n", i, _spu_memList[i].addr, _spu_memList[i].size);
-    }
-
+    print_memlist();
+#if 0
     ASSERT_EQ(_spu_memList[0].addr, 0x00001010);
     ASSERT_EQ(_spu_memList[1].addr, 0x40011010);
     ASSERT_EQ(_spu_memList[2].addr, 0);
@@ -220,18 +231,64 @@ int main()
     ASSERT_EQ(_spu_memList[0].size, 65536);
     ASSERT_EQ(_spu_memList[1].size, 454640);
     ASSERT_EQ(_spu_memList[2].size, 0);
-
+#endif
 #if 1
     g_SeqAccessNum = SsSeqOpen(lib_seq, 0);
-	SsSetMVol(127, 127);				/* set main volume */
-	SsSeqSetVol(g_SeqAccessNum, 64, 64);
+    SsSetMVol(127, 127); /* set main volume */
+    SsSeqSetVol(g_SeqAccessNum, 64, 64);
     SsSeqPlay(g_SeqAccessNum, 1, 1);
 
-    while(frames++ < 60*10)
+    while (frames++ < 60 * 10)
     {
         VSync(0);
     }
 #endif
+}
+
+void test_spu_malloc()
+{
+    s8 temp[0x1000] = {0};
+    s32 result;
+    SpuInitMalloc(32, temp);
+
+    ASSERT_EQ((*_spu_memList)[0].addr, 0x40001010);
+    ASSERT_EQ((*_spu_memList)[0].size, 520176);
+    ASSERT_EQ((*_spu_memList)[1].addr, 0);
+    ASSERT_EQ((*_spu_memList)[1].size, 0);
+
+    print_memlist();
+
+    SpuMallocWithStartAddr(0x1010, 0x10000);
+
+    print_memlist();
+
+    ASSERT_EQ((*_spu_memList)[0].addr, 0x00001010);
+    ASSERT_EQ((*_spu_memList)[0].size, 65536);
+    ASSERT_EQ((*_spu_memList)[1].addr, 0x40011010);
+    ASSERT_EQ((*_spu_memList)[1].size, 454640);
+    ASSERT_EQ((*_spu_memList)[2].addr, 0);
+    ASSERT_EQ((*_spu_memList)[2].size, 0);
+
+    result = SpuMalloc(269488);
+    ASSERT_EQ(result, 0x11010);
+
+    print_memlist();
+
+    ASSERT_EQ((*_spu_memList)[0].addr, 0x00001010);
+    ASSERT_EQ((*_spu_memList)[0].size, 65536);
+    ASSERT_EQ((*_spu_memList)[1].addr, 0x00011010);
+    ASSERT_EQ((*_spu_memList)[1].size, 269488);
+    ASSERT_EQ((*_spu_memList)[2].addr, 0x40052CC0);
+    ASSERT_EQ((*_spu_memList)[2].size, 185152);
+    ASSERT_EQ((*_spu_memList)[3].addr, 0);
+    ASSERT_EQ((*_spu_memList)[3].size, 0);
+
+    PcsxReduxExit(0);
+}
+
+int main()
+{
+    test_spu_malloc();
 
     PcsxReduxExit(0);
     return 0;
