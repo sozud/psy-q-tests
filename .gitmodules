@@ -1,0 +1,6 @@
+[submodule "mednafen-git"]
+	path = mednafen-git
+	url = git@github.com:sozud/mednafen-git.git
+[submodule "psy-q"]
+	path = psy-q
+	url = git@github.com:sozud/psy-q.git

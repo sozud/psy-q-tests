@@ -1,0 +1,42 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build-psx:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dosemu
+      run: |
+        git clone https://github.com/sozud/dosemu-deb.git
+        cd dosemu-deb
+        sudo apt-get install xfonts-utils
+        sudo dpkg -i fdpp_1.6-1_amd64.deb
+        sudo dpkg -i fdpp-dev_1.6-1_amd64.deb
+        sudo dpkg -i comcom32_0.1~alpha3-1_all.deb
+        sudo dpkg -i dosemu2_2.0~pre9-1_amd64.deb
+
+    - name: Init submodules
+      run: git submodule update --init --recursive
+
+    - name: Build
+      run: sh build.sh
+
+    - name: Get bios
+      run: |
+        wget https://archive.org/download/PlayStationBIOSFilesNAEUJP/scph5500.bin
+        mkdir -p /home/runner/.mednafen/firmware/
+        cp scph5500.bin /home/runner/.mednafen/firmware/
+    
+    - name: Run unit tests
+      run: xvfb-run ./mednafen-build/mednafen ./sound.exe
